@@ -74,6 +74,8 @@ class Selectors:
     GROUP_PROMOTE_ADMIN = 'li > div[aria-label="Make group admin"]'
     GROUP_DEMOTE_ADMIN = 'li > div[aria-label="Dismiss as admin"]'
 
+    GROUP_REMOVE = 'li > div[aria-label="Remove"]'
+
     UNREAD_BADGE = 'span[aria-label="Unread"]'
     UNREAD_TITLE = 'span[title]'
     UNREAD_LAST_MESSAGE = 'div[role="gridcell"] + div span[title]'

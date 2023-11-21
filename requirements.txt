@@ -3,3 +3,5 @@ qrcode >= 7.4.2
 pillow >= 9.5.0
 beautifulsoup4 >= 4.12.2
 datefinder >= 0.7.3
+requests >= 2.26.0
+```

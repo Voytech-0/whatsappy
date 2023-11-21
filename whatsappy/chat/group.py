@@ -59,6 +59,9 @@ class Group(chat.Conversation):
         # Group participants
         self.participants = int(driver.find_element(By.CSS_SELECTOR, Selectors.GROUP_PARTICIPANTS).text.split()[0])
 
+        #Group participants list
+        self.participants_list = driver.find_element(By.CSS_SELECTOR, Selectors.GROUP_PARTICIPANTS).text.split()
+
         # Group profile picture
         if not element_exists(driver, By.CSS_SELECTOR, Selectors.GROUP_DEFAULT_PIC):
             pfp_url = driver.find_element(By.CSS_SELECTOR, Selectors.CHAT_INFO_PIC).get_attribute("src")
@@ -165,6 +168,26 @@ class Group(chat.Conversation):
         driver.find_element(By.CSS_SELECTOR, Selectors.GROUP_DEMOTE_ADMIN).click()
         driver.find_element(By.CSS_SELECTOR, Selectors.CLOSE).click()
 
+    def remove(self, user: str) -> None:
+        """Removes a user from the group.
+
+        #### Arguments
+            * user (str): The user to remove.
+        """
+
+        driver = self._whatsapp.driver
+
+        WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, Selectors.GROUP_SEARCH_RESULT)))
+
+        driver.find_element(By.CSS_SELECTOR, Selectors.GROUP_SEARCH_RESULT).click()
+
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, Selectors.GROUP_REMOVE)))
+
+        driver.find_element(By.CSS_SELECTOR, Selectors.GROUP_REMOVE).click()
+        driver.find_element(By.CSS_SELECTOR, Selectors.CLOSE).click()
+
     def _is_admin(self, user: str) -> bool:
         if self._whatsapp.current_chat != self.name:
             raise NotSelectedException(f"The group \"{self.name}\" is not selected.")
@@ -197,3 +220,49 @@ class Group(chat.Conversation):
         search_box.send_keys(user)
 
         return driver.find_elements(By.CSS_SELECTOR, Selectors.GROUP_SEARCH_RESULT)
+
+    def get_all_users(self) -> List[str]:
+        driver = self._whatsapp.driver
+        driver.find_element(By.CSS_SELECTOR, Selectors.GROUP_SEARCH).click()
+
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, Selectors.GROUP_SEARCH_INPUT)))
+
+        search_box = driver.find_element(By.CSS_SELECTOR, Selectors.GROUP_SEARCH_INPUT)
+        search_box.click()
+
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, Selectors.GROUP_SEARCH_RESULT)))
+
+        raw_list = driver.find_elements(By.CSS_SELECTOR, Selectors.GROUP_SEARCH_RESULT)
+
+        for element in raw_list:
+
+            # Get the tag name
+            tag_name = element.tag_name
+
+            # Get the outerHTML attribute
+            outer_html = element.get_attribute('outerHTML')
+
+            # Construct the CSS selector
+            css_selector = f'{tag_name}[outerHTML="{outer_html}"]'
+
+            # Define a regex pattern to extract the title from the title attribute
+            title_pattern = re.compile(r'title="(.*?)"')
+
+            # Find the match using the regex pattern
+            match = title_pattern.search(css_selector)
+
+            # Check if a match is found and extract the title
+            if match:
+                title = match.group(1)
+                print("Title:", title)
+            else:
+                print("Title not found.")
+
+            # Print the CSS selector
+            # print(css_selector)
+
+        driver.find_element(By.CSS_SELECTOR, Selectors.CLOSE).click()
+
+        return raw_list
